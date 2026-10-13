@@ -1,5 +1,27 @@
 # ResQ
 
+## Priority 1 routing review
+
+The **Brain** workspace now searches the full checked-in directed Chennai road graph
+with A*, consuming fused synthetic baseline forecasts on monitored corridors and
+static weights elsewhere. Closures are excluded from search. A 10-second **and**
+5-percent hysteresis margin prevents small ETA changes from switching routes;
+closures override this policy. Mid-edge replanning preserves the traversed segment.
+If no path exists, the vehicle stops and the API returns an explicit `no_path` decision.
+
+The dashboard includes **Routing Decision**, a measured A*/Dijkstra comparison and
+a review report with an accident overlay and per-edge connectivity proof. These
+measurements are separate from the formula-based Results page. D* Lite is future work.
+
+Generate the evidence from the repository root:
+
+```powershell
+uv run python -m experiments.routing_evaluation --repeats 100
+```
+
+Open `docs/routing-evaluation/routing-review.html`, or use the evidence link on the
+Brain page. Read `docs/ROUTING_REVIEW_GUIDE.md` for demonstration steps and claim limits.
+
 ResQ is a research prototype for ambulance routing and traffic-signal preemption.
 Its Chennai routes are shortest paths on a checked-in, directed OpenStreetMap road
 graph, priced by a trained Graph WaveNet speed forecaster when a corridor checkpoint
@@ -9,18 +31,18 @@ traffic — its accuracy is a statement about the simulator.
 
 ## Run locally
 
-Prerequisites: Python 3.12 or 3.13 and Node.js. In this workspace, the existing
+Prerequisites: Python 3.12 through 3.14 and Node.js. In this workspace, the existing
 `.venv` can be used directly; `uv` does not need to be on `PATH`.
 
 ```powershell
-cd C:\OblivionX\College\IDP
+cd C:\Users\Kailash\RESQ
 .\.venv\Scripts\python.exe -m uvicorn api.main:app --reload --host 127.0.0.1 --port 8000
 ```
 
 In a second terminal:
 
 ```powershell
-cd C:\OblivionX\College\IDP\web
+cd C:\Users\Kailash\RESQ\web
 npm install
 npm run dev
 ```
@@ -58,12 +80,13 @@ The Results page also generates formula-based estimates and stores them in
 
 ## Run the real SUMO scenario
 
-SUMO 1.27.1, TraCI, and `sumolib` are installed in this workspace's `.venv`.
-No global `SUMO_HOME` or `PATH` change is required. To rebuild the current OSM
+Install SUMO 1.27.1, TraCI and `sumolib` with `uv sync --extra sumo` before
+launching this scenario. No global `SUMO_HOME` or `PATH` change is required.
+To rebuild the current OSM
 network and launch the ambulance run in SUMO-GUI:
 
 ```powershell
-cd C:\OblivionX\College\IDP
+cd C:\Users\Kailash\RESQ
 .\scripts\sumo.ps1 -Build
 ```
 
@@ -141,7 +164,8 @@ The source and refresh time are recorded in `sim/chennai/roads.json`. To refresh
 the extract, run `.\.venv\Scripts\python.exe scripts\build_road_graph.py`, then
 rerun tests and visually review the paths. The demo router respects mapped
 one-way streets but does not yet model turn restrictions, lane rules, or closures
-beyond the staged incident section.
+beyond closures explicitly supplied to the Brain workspace. The Live/Replay
+demonstration still uses its precomputed incident section.
 
 See `docs/IMPLEMENTATION.md` for the complete module map, API, adapter setup, and
 research-integrity constraints. SUMO map generation instructions are under

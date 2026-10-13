@@ -26,42 +26,54 @@ def _adjusted_stddev(observation: RoadObservation, config: FusionConfig) -> floa
 
 def fuse_observations(
     road_id: str,
-    macro: RoadObservation | None,
-    perception: RoadObservation | None,
+    *observations: RoadObservation | None,
     config: FusionConfig | None = None,
 ) -> RoadEstimate:
-    """Fuse macro and perception estimates using inverse-variance weighting."""
+    """Fuse any number of independent observations with inverse-variance weighting.
+
+    Any observation may be `None` (a source that failed, was disabled, or has no
+    reading for this road) and is simply excluded. The brain therefore keeps
+    producing an estimate as long as at least one source is present, and the
+    estimate degrades gracefully to whichever subset of sources is alive.
+    """
 
     config = config or FusionConfig()
-    if macro is None and perception is None:
+    present = [item for item in observations if item is not None]
+    if not present:
         raise ValueError("at least one observation is required")
-    for observation in (macro, perception):
-        if observation is not None and observation.road_id != road_id:
+    for observation in present:
+        if observation.road_id != road_id:
             raise ValueError("all observations must refer to the requested road")
 
-    if (
-        perception is not None
-        and perception.blockage
-        and perception.confidence >= config.blockage_confidence
-    ):
+    blocked = [
+        item
+        for item in present
+        if item.blockage and item.confidence >= config.blockage_confidence
+    ]
+    if blocked:
+        override = max(blocked, key=lambda item: item.confidence)
+        macro = next((item for item in present if item.source == SourceKind.MACRO), None)
+        perception = next((item for item in present if item.source == SourceKind.PERCEPTION), None)
         return RoadEstimate(
             road_id=road_id,
             travel_time_s=config.near_closed_time_s,
-            confidence=perception.confidence,
+            confidence=override.confidence,
             macro_time_s=macro.travel_time_s if macro else None,
-            perception_time_s=perception.travel_time_s,
+            perception_time_s=perception.travel_time_s if perception else None,
             blockage=True,
-            explanation="Perception override: high-confidence blockage",
+            explanation=f"{override.source.value} override: high-confidence blockage",
         )
 
-    observations = [item for item in (macro, perception) if item is not None]
-    adjusted = [(item, _adjusted_stddev(item, config)) for item in observations]
+    adjusted = [(item, _adjusted_stddev(item, config)) for item in present]
     precision_sum = sum(1 / (stddev**2) for _, stddev in adjusted)
     travel_time = sum(item.travel_time_s / (stddev**2) for item, stddev in adjusted)
     travel_time /= precision_sum
     combined_stddev = sqrt(1 / precision_sum)
     confidence = max(0.0, min(1.0, 1 - combined_stddev / max(travel_time, 1)))
-    source_label = "macro + perception" if len(adjusted) == 2 else adjusted[0][0].source.value
+    source_label = " + ".join(sorted({item.source.value for item in present}))
+
+    macro = next((item for item in present if item.source == SourceKind.MACRO), None)
+    perception = next((item for item in present if item.source == SourceKind.PERCEPTION), None)
 
     return RoadEstimate(
         road_id=road_id,
@@ -72,4 +84,3 @@ def fuse_observations(
         blockage=False,
         explanation=f"Inverse-variance estimate from {source_label}",
     )
-

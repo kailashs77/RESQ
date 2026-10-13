@@ -1,6 +1,8 @@
 """FastAPI entrypoint for the first ResQ vertical slice."""
 
 import asyncio
+import json
+import mimetypes
 import os
 from pathlib import Path
 from typing import Annotated
@@ -11,6 +13,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from adapters import CarlaSensorRig, SumoTraCIAdapter
+from brain import BrainSimulation
 from experiments.runner import FastScenarioRunner
 from forecast.runtime import (
     HORIZONS_MIN,
@@ -46,6 +49,8 @@ app.add_middleware(
 )
 
 simulation = DemoSimulation()
+brain_simulation = BrainSimulation()
+ROUTING_EVIDENCE = Path(__file__).resolve().parents[1] / "docs" / "routing-evaluation"
 runner = FastScenarioRunner()
 store = RunStore()
 
@@ -93,6 +98,39 @@ def snapshot() -> NetworkSnapshot:
 def roads() -> dict:
     """Inspect the same OSM road ways used by the demonstration router."""
     return road_geojson()
+
+
+@app.get("/api/routing/evaluation")
+def routing_evaluation() -> dict:
+    """Measured, saved evidence. Do not run a benchmark in a live request."""
+    path = ROUTING_EVIDENCE / "routing-evaluation.json"
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="Generate routing evaluation evidence first")
+    report = json.loads(path.read_text(encoding="utf-8"))
+    return {
+        key: report[key]
+        for key in (
+            "generated_at",
+            "metadata",
+            "comparison",
+            "hysteresis",
+            "route_changes",
+            "dynamic_checks",
+        )
+    }
+
+
+@app.get("/api/routing/evidence/{filename}")
+def routing_evidence(filename: str) -> FileResponse:
+    allowed = {
+        "routing-review.html",
+        "routing-evaluation.json",
+        "algorithm-comparison.csv",
+        "accident-route-overlay.svg",
+    }
+    if filename not in allowed or not (ROUTING_EVIDENCE / filename).is_file():
+        raise HTTPException(status_code=404, detail="Evidence file not found")
+    return FileResponse(ROUTING_EVIDENCE / filename)
 
 
 @app.patch("/api/controls", response_model=ControlState)
@@ -242,8 +280,45 @@ async def live(websocket: WebSocket) -> None:
         return
 
 
+@app.get("/api/brain/snapshot", response_model=NetworkSnapshot)
+def brain_snapshot() -> NetworkSnapshot:
+    return brain_simulation.snapshot()
+
+
+@app.patch("/api/brain/controls", response_model=ControlState)
+def update_brain_controls(
+    changes: Annotated[
+        dict[str, bool | int | list[str]], Body(examples=[{"congestion_scenario": True}])
+    ],
+) -> ControlState:
+    try:
+        return brain_simulation.update_controls(**changes)
+    except (ValueError, TypeError) as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
+
+
+@app.post("/api/brain/reset", response_model=ControlState)
+def reset_brain() -> ControlState:
+    brain_simulation.reset()
+    return brain_simulation.controls
+
+
+@app.websocket("/ws/brain")
+async def brain_live(websocket: WebSocket) -> None:
+    await websocket.accept()
+    try:
+        while True:
+            await websocket.send_text(brain_simulation.snapshot().model_dump_json())
+            await asyncio.sleep(0.2)
+    except WebSocketDisconnect:
+        return
+
+
 WEB_DIST = Path(__file__).resolve().parents[1] / "web" / "dist"
 if WEB_DIST.exists():
+    # Windows registry MIME mappings can label .mjs as text/plain. Browsers
+    # reject module workers with that type, silently hiding vector road routes.
+    mimetypes.add_type("text/javascript", ".mjs")
     app.mount("/assets", StaticFiles(directory=WEB_DIST / "assets"), name="assets")
 
     @app.get("/{path:path}", include_in_schema=False)

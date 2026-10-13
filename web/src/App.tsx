@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import BrainPage from "./BrainPage";
 import CabPage from "./CabPage";
 import ForecastPage from "./ForecastPage";
 import LiveMap from "./LiveMap";
@@ -6,7 +7,7 @@ import ReplayPage from "./ReplayPage";
 import ResultsPage from "./ResultsPage";
 import type { Snapshot } from "./types";
 
-type Page = "Live" | "Forecast" | "Replay" | "Cab" | "Results";
+type Page = "Live" | "Brain" | "Forecast" | "Replay" | "Cab" | "Results";
 
 function eta(seconds: number) {
   if (seconds >= 900) return "Blocked";
@@ -58,7 +59,7 @@ export default function App() {
       <header className="topbar">
         <div className="brand" aria-label="ResQ">Res<span>Q</span><i /></div>
         <nav aria-label="Main navigation">
-          {(["Live", "Forecast", "Replay", "Cab", "Results"] as Page[]).map((item) => (
+          {(["Live", "Brain", "Forecast", "Replay", "Cab", "Results"] as Page[]).map((item) => (
             <button type="button" className={page === item ? "active" : ""} aria-current={page === item ? "page" : undefined} onClick={() => setPage(item)} key={item}>{item}</button>
           ))}
         </nav>
@@ -121,6 +122,7 @@ export default function App() {
           <section className="decision-log" aria-label="Decision log"><div><span className="section-label">Decision log</span><h2>Recent decisions.</h2></div><ol>{snapshot?.decisions.length ? snapshot.decisions.slice(-4).map((event, index) => <li key={`${event.kind}-${event.at_s}-${index}`}><time>{event.at_s.toFixed(1)}s</time><strong>{event.message}</strong><span>{event.kind.replaceAll("_", " ")}</span></li>) : <li className="empty-log">Decisions will appear as the mission progresses.</li>}</ol></section>
         </main>
       )}
+      {page === "Brain" && <BrainPage />}
       {page === "Forecast" && <ForecastPage />}
       {page === "Replay" && <ReplayPage />}
       {page === "Cab" && <CabPage snapshot={snapshot} />}
