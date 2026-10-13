@@ -164,6 +164,12 @@ class DecisionEngine:
             | (self.plan.blocked_edges if controls.accident else frozenset())
             | frozenset(edge_id for edge_id, estimate in estimates.items() if estimate.blockage)
         )
+        if controls.no_path_scenario:
+            blocked |= frozenset(
+                edge_id
+                for edge_id, (_, edge) in self.network.edge_index.items()
+                if edge.target == self._goal
+            )
         weights = {edge_id: item.travel_time_s for edge_id, item in estimates.items()}
         elapsed = 0.0 if self._last_time is None else now_s - self._last_time
         self._advance(elapsed, blocked)

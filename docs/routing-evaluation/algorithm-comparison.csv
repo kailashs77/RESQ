@@ -1,13 +1,13 @@
 scenario,algorithm,repeats,median_ms,p95_ms,median_search_ms,nodes_explored,edges_examined,travel_time_s,status,equal_optimal_cost
-Static baseline,dijkstra,100,3.38775,6.3729,3.07985,2061,3848,285.06642317654763,ok,True
-Static baseline,astar,100,2.54945,4.6214,1.39425,503,998,285.06642317654763,ok,True
-Accident closure,dijkstra,100,3.0685000000000002,5.1137,2.8001,2110,3924,293.96113171447524,ok,True
-Accident closure,astar,100,2.3522999999999996,3.4701,1.30485,556,1074,293.96113171447524,ok,True
-Predicted congestion,dijkstra,100,2.9237,3.5085,2.66835,2102,3913,293.83952531192136,ok,True
-Predicted congestion,astar,100,2.8734,3.4995,1.82765,791,1524,293.83952531192136,ok,True
-FIFO forecast departure 0s,dijkstra,100,2.64725,3.1923,2.5729,2061,3848,285.06642317654763,ok,True
-FIFO forecast departure 0s,astar,100,1.13675,1.4652,1.0912,503,998,285.06642317654763,ok,True
-FIFO forecast departure 600s,dijkstra,100,2.8804499999999997,3.6198,2.7944500000000003,2111,3926,293.96113171447524,ok,True
-FIFO forecast departure 600s,astar,100,1.31025,1.6527,1.2643,557,1076,293.96113171447524,ok,True
-No path: all origin exits closed,dijkstra,100,0.13295,0.1789,0.0018,1,1,,no_path,True
-No path: all origin exits closed,astar,100,0.7703,1.0593,0.0054,1,1,,no_path,True
+Static baseline,dijkstra,100,5.1197,9.0894,4.54525,2061,3848,285.06642317654763,ok,True
+Static baseline,astar,100,3.71285,7.3342,1.9487999999999999,503,998,285.06642317654763,ok,True
+Accident closure,dijkstra,100,5.4931,10.6688,4.91675,2110,3924,293.96113171447524,ok,True
+Accident closure,astar,100,4.3315,9.3986,2.22755,556,1074,293.96113171447524,ok,True
+Predicted congestion,dijkstra,100,9.87085,13.9595,8.550899999999999,2102,3913,293.83952531192136,ok,True
+Predicted congestion,astar,100,9.508700000000001,12.8327,5.89535,791,1524,293.83952531192136,ok,True
+FIFO forecast departure 0s,dijkstra,100,7.57945,10.4779,7.1543,2061,3848,285.06642317654763,ok,True
+FIFO forecast departure 0s,astar,100,3.15265,5.3659,2.9713000000000003,503,998,285.06642317654763,ok,True
+FIFO forecast departure 600s,dijkstra,100,7.23525,10.3796,6.8701,2111,3926,293.96113171447524,ok,True
+FIFO forecast departure 600s,astar,100,3.3119,5.7216,3.1408,557,1076,293.96113171447524,ok,True
+No path: all origin exits closed,dijkstra,100,0.2732,0.6347,0.0059,1,1,,no_path,True
+No path: all origin exits closed,astar,100,1.7907,3.8302,0.02525,1,1,,no_path,True

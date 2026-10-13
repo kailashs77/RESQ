@@ -4,7 +4,7 @@ import maplibreWorkerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?url";
 import type { Map as MapLibreMap, Marker } from "maplibre-gl";
 import type { GhostReplay } from "./types";
 
-maplibregl.setWorkerUrl(maplibreWorkerUrl);
+maplibregl.setWorkerUrl(`${maplibreWorkerUrl}?module=1`);
 
 export default function ReplayMap({ replay, frameIndex }: { replay: GhostReplay; frameIndex: number }) {
   const container = useRef<HTMLDivElement>(null);

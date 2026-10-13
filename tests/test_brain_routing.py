@@ -52,6 +52,16 @@ def test_no_path_stop_and_recovery(network):
     assert recovered.vehicle_position == position
 
 
+def test_hospital_access_control_returns_no_path_and_resumes(network):
+    engine = DecisionEngine(network)
+    stopped = engine.tick(0, static_controls(no_path_scenario=True))
+    assert stopped.routing_decision.status == "no_path"
+    assert stopped.routes == [] and stopped.vehicle_speed_mps == 0
+    resumed = engine.tick(1, static_controls())
+    assert resumed.routing_decision.connectivity_valid
+    assert resumed.vehicle_position == stopped.vehicle_position
+
+
 def test_mid_edge_replan_never_jumps_and_current_edge_closure_stops(network):
     engine = DecisionEngine(network)
     engine.tick(0, static_controls())

@@ -1,7 +1,7 @@
 import pytest
 from httpx import ASGITransport, AsyncClient
 
-from api.main import app, brain_simulation
+from api.main import WEB_DIST, app, brain_simulation
 from sim.chennai.roads import demo_plan
 
 
@@ -60,3 +60,15 @@ async def test_measured_evidence_and_only_allowed_files_are_served():
         html = await client.get("/api/routing/evidence/routing-review.html")
         assert html.status_code == 200 and "Proof of valid road connectivity" in html.text
         assert (await client.get("/api/routing/evidence/engine.py")).status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_map_module_workers_have_javascript_mime_type():
+    workers = list((WEB_DIST / "assets").glob("maplibre-gl-worker-*.mjs"))
+    if not workers:
+        pytest.skip("frontend production assets have not been built")
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        for name in (workers[0].name, "maplibre-gl-shared.mjs"):
+            response = await client.get(f"/assets/{name}")
+            assert response.status_code == 200
+            assert response.headers["content-type"].split(";")[0] == "text/javascript"

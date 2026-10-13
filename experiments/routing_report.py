@@ -195,7 +195,8 @@ position. Removing closures allows a connected route to resume.</p>
 <p>Run <code>uv run python -m experiments.routing_evaluation --repeats 100</code>
 from the repository. Open the dashboard's <b>Brain</b> page and toggle simulated closure
 or forecast congestion. Routing Decision shows the reason, roads, weights, algorithm,
-switching margins, search counts and connectivity. Live/Replay remains a staged presentation.</p>
+switching margins, search counts and connectivity. The separate Live/Forecast pipeline can
+load an optional corridor checkpoint. Those trained results are outside this routing evidence.</p>
 <p>Supporting files: <a href="algorithm-comparison.csv">comparison CSV</a>,
 <a href="routing-evaluation.json">raw results and edge proof</a>,
 <a href="accident-route-overlay.svg">exportable overlay</a>.</p>

@@ -4,7 +4,7 @@ import maplibreWorkerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?url";
 import type { GeoJSONSource, Map as MapLibreMap } from "maplibre-gl";
 import type { ForecastSegments } from "./types";
 
-maplibregl.setWorkerUrl(maplibreWorkerUrl);
+maplibregl.setWorkerUrl(`${maplibreWorkerUrl}?module=1`);
 
 type Properties = Record<string, unknown>;
 

@@ -80,12 +80,13 @@ The Results page also generates formula-based estimates and stores them in
 
 ## Run the real SUMO scenario
 
-SUMO 1.27.1, TraCI, and `sumolib` are installed in this workspace's `.venv`.
-No global `SUMO_HOME` or `PATH` change is required. To rebuild the current OSM
+Install SUMO 1.27.1, TraCI and `sumolib` with `uv sync --extra sumo` before
+launching this scenario. No global `SUMO_HOME` or `PATH` change is required.
+To rebuild the current OSM
 network and launch the ambulance run in SUMO-GUI:
 
 ```powershell
-cd C:\OblivionX\College\IDP
+cd C:\Users\Kailash\RESQ
 .\scripts\sumo.ps1 -Build
 ```
 

@@ -35,9 +35,10 @@ all 1,200 timed samples, graph/source fingerprints, scenario inputs and proofs.
    the decision log. This is synthetic baseline forecast output.
 6. Scroll to **Routing evaluation**. Compare measured milliseconds, nodes and costs,
    then open the report and expand the per-edge proof.
-7. For the no-path demonstration, use `/api/brain/controls` with `blocked_edge_ids`
-   covering all outgoing edges of the current node. The automated API test provides
-   a repeatable example without guessing edge IDs. Send an empty list to reopen them.
+7. Enable **Block hospital access (no-path test)**. All incoming hospital edges
+   close, so the decision reports `no_path` and no route is active. Disable it to
+   reopen access and resume. For arbitrary closures, `/api/brain/controls` also
+   accepts actual graph edge IDs in `blocked_edge_ids`.
 
 The vehicle advances along mapped edges at assumed static speeds. Updating controls
 does not teleport or restart it. An incident can stop an ambulance already on the
@@ -65,8 +66,11 @@ decision. D* Lite remains a future improvement.”
   respects mapped direction but excludes turn restrictions, lane rules and legal
   access permissions. It does not certify real navigation.
 - Forecasters monitor the union of the original and demonstration bypass corridors.
-  Other graph edges use static fallback. Trained-model/live perception integration,
-  live closures and end-to-end SUMO validation are outside this implementation.
+  Other graph edges use static fallback. This Brain evaluation does not exercise
+  the separate trained Graph WaveNet pipeline, live perception or live SUMO coupling.
+  The combined project preserves the current fork's Forecast workspace and
+  optional trained-checkpoint integration in Live. Its checkpoint artifacts are
+  not included in this checkout or in the routing timing evidence.
 - Signal checkpoints are virtual. Existing priority requests retain the controller's
   expiration, maximum preemption and recovery constraints. No real signals actuate.
 - The original Live/Replay and formula-based B0–B5 Results remain demonstrations.

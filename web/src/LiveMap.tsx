@@ -4,7 +4,7 @@ import maplibreWorkerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?url";
 import type { GeoJSONSource, Map as MapLibreMap, Marker } from "maplibre-gl";
 import type { Snapshot } from "./types";
 
-maplibregl.setWorkerUrl(maplibreWorkerUrl);
+maplibregl.setWorkerUrl(`${maplibreWorkerUrl}?module=1`);
 const emptyCollection: GeoJSON.FeatureCollection = { type: "FeatureCollection", features: [] };
 
 export default function LiveMap({ snapshot, followVehicle = false }: { snapshot: Snapshot | null; followVehicle?: boolean }) {

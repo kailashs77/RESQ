@@ -2,6 +2,7 @@
 
 import asyncio
 import json
+import mimetypes
 import os
 from pathlib import Path
 from typing import Annotated
@@ -315,6 +316,9 @@ async def brain_live(websocket: WebSocket) -> None:
 
 WEB_DIST = Path(__file__).resolve().parents[1] / "web" / "dist"
 if WEB_DIST.exists():
+    # Windows registry MIME mappings can label .mjs as text/plain. Browsers
+    # reject module workers with that type, silently hiding vector road routes.
+    mimetypes.add_type("text/javascript", ".mjs")
     app.mount("/assets", StaticFiles(directory=WEB_DIST / "assets"), name="assets")
 
     @app.get("/{path:path}", include_in_schema=False)

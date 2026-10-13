@@ -145,6 +145,7 @@ class ControlState(StrictModel):
     spatial_temporal_model_enabled: bool = True
     congestion_scenario: bool = False
     blocked_edge_ids: list[str] = Field(default_factory=list)
+    no_path_scenario: bool = False
 
 
 class ForecastSegment(StrictModel):

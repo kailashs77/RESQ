@@ -180,6 +180,12 @@ export default function BrainPage() {
                 onChange={(value) => patchBrainControls({ congestion_scenario: value })}
                 danger
               />
+              <Control
+                label="Block hospital access (no-path test)"
+                checked={controls?.no_path_scenario ?? false}
+                onChange={(value) => patchBrainControls({ no_path_scenario: value })}
+                danger
+              />
             </div>
           </details>
         </aside>

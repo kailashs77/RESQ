@@ -70,6 +70,7 @@ export type Snapshot = {
     spatial_temporal_model_enabled: boolean;
     congestion_scenario: boolean;
     blocked_edge_ids: string[];
+    no_path_scenario: boolean;
   };
   health: {
     macro_age_s: number;
