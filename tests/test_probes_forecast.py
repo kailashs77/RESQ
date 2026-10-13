@@ -1,6 +1,7 @@
 import pytest
 
 from forecast import HistoricalAverageForecaster, SpatialTemporalForecaster, SpeedRecord
+from forecast.adapter import speed_forecast_to_observation
 from sim.probes import ProbeAggregator, ProbeGenerator, VehicleTruth
 
 
@@ -34,3 +35,10 @@ def test_spatial_forecast_returns_all_horizons() -> None:
     forecasts = model.predict({"A1": [12, 10], "A2": [8, 7]}, "A1")
     assert [item.horizon_minutes for item in forecasts] == [5, 15, 30]
     assert all(item.speed_mps > 0 for item in forecasts)
+
+
+def test_speed_forecast_converts_mph_to_macro_travel_time() -> None:
+    observation = speed_forecast_to_observation("edge-1", 1000, 22.3694, 2.0, age_s=30)
+    assert observation.travel_time_s == pytest.approx(100, rel=1e-4)
+    assert observation.stddev_s > 0
+    assert observation.age_s == 30

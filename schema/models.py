@@ -147,6 +147,36 @@ class ControlState(StrictModel):
     blocked_edge_ids: list[str] = Field(default_factory=list)
 
 
+class ForecastSegment(StrictModel):
+    segment_id: str
+    osm_way_id: str
+    name: str
+    length_m: float = Field(gt=0)
+    observed_mph: float = Field(ge=0)
+    forecast_mph: float = Field(ge=0)
+    stddev_mph: float = Field(ge=0)
+    free_flow_mph: float = Field(gt=0)
+    actual_mph: float | None = Field(default=None, ge=0)
+    on_route: bool = False
+
+
+class ForecastSummary(StrictModel):
+    """What the trained speed model contributed to the current decision."""
+
+    available: bool
+    model: str
+    source: str
+    horizon_minutes: int = Field(ge=0)
+    at: datetime | None = None
+    replay_step: int | None = None
+    route_coverage: float = Field(default=0, ge=0, le=1)
+    corridor_mean_mph: float | None = Field(default=None, ge=0)
+    segments_monitored: int = Field(default=0, ge=0)
+    forecast_delay_s: float = Field(default=0, ge=0)
+    slowest: list[ForecastSegment] = Field(default_factory=list)
+    note: str = ""
+
+
 class DataHealth(StrictModel):
     macro_age_s: float = Field(ge=0)
     perception_online: bool
@@ -165,6 +195,7 @@ class NetworkSnapshot(StrictModel):
     decisions: list[DecisionEvent]
     controls: ControlState
     health: DataHealth
+    forecast: ForecastSummary | None = None
     incident: GeoPoint | None = None
     routing_decision: RoutingDecision | None = None
 

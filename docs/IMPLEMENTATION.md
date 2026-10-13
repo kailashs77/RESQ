@@ -21,7 +21,7 @@ The repository now runs the full software workflow without external simulators:
 |---|---|
 | `schema/` | Versioned contracts shared by all modules and the browser |
 | `sim/` | Live demo, probe source, Chennai network builder, SUMO configuration |
-| `forecast/` | Historical-average and spatial-temporal forecasting baselines |
+| `forecast/` | Graph WaveNet training, checkpoint runtime, baselines, travel-time adapter |
 | `perception/` | Tracks, blockage detection, prediction, LiDAR clustering |
 | `fusion/` | Inverse-variance travel-time fusion and blockage override |
 | `routing/` | Time-dependent shortest path and reroute policy |
@@ -46,6 +46,11 @@ The repository now runs the full software workflow without external simulators:
 | GET | `/api/results` | Aggregated recorded results |
 | GET | `/api/replays` | Available replay catalogue |
 | GET | `/api/replays/ghost` | Synchronized B0/B1/B5 replay |
+| GET | `/api/forecast` | Corridor model card, held-out metrics, benchmark evidence |
+| GET | `/api/forecast/segments` | Current speed prediction per monitored segment |
+| GET | `/api/forecast/geometry` | Monitored-segment shapes for the map |
+| GET | `/api/forecast/series/{segment_id}` | History, forecast band, held-out truth |
+| GET | `/api/forecast/benchmarks` | METR-LA and PEMS-BAY test reports |
 
 Interactive OpenAPI documentation is available at `/docs` while the server runs.
 

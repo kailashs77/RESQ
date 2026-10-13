@@ -3,8 +3,8 @@
   xsi:noNamespaceSchemaLocation="https://sumo.dlr.de/xsd/sumoConfiguration.xsd">
   <input>
     <net-file value="generated/thousand_lights.net.xml"/>
-    <route-files value="generated/background.rou.xml"/>
-    <additional-files value="vehicle_types.add.xml"/>
+    <route-files value="generated/background.rou.xml,generated/ambulance.rou.xml"/>
+    <additional-files value="vehicle_types.add.xml,generated/landscape.poly.xml,generated/scenario.add.xml"/>
   </input>
   <time>
     <begin value="0"/>
@@ -16,6 +16,9 @@
     <collision.action value="warn"/>
     <lateral-resolution value="0.8"/>
   </processing>
+  <gui_only>
+    <gui-settings-file value="review.view.xml"/>
+  </gui_only>
   <random_number>
     <seed value="42"/>
   </random_number>

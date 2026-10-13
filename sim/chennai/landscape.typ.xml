@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  polyconvert allow-list for the Thousand Lights background map.
+
+  build_network.py runs polyconvert with discard-by-default, so only the types below
+  are imported. Keys (e.g. "building") match every value of that key; "key.value"
+  entries match one value. Areas use fill="true" so only closed OSM ways are filled.
+  Waterways are lines (fill="false"); landscape.py later gives them a real width and
+  clips them to the network.
+
+  Deliberately absent: boundary.* (admin and Metro Water supply zones, which were
+  drawn as large blue areas over roads), shops/amenity points, and barriers.
+  The Cooum riverbank multipolygon is incomplete in the bbox download, so the
+  river is drawn from its centreline (waterway.river) at river width instead.
+-->
+<polygonTypes>
+    <!-- Water -->
+    <polygonType id="natural.water" color=".67,.83,.88" layer="-6" fill="true"/>
+    <polygonType id="water" color=".67,.83,.88" layer="-6" fill="true"/>
+    <!-- Incomplete Cooum riverbank multipolygon; the centreline below replaces it. -->
+    <polygonType id="water.river" discard="true"/>
+    <polygonType id="landuse.reservoir" color=".67,.83,.88" layer="-6" fill="true"/>
+    <polygonType id="landuse.basin" color=".67,.83,.88" layer="-6" fill="true"/>
+    <polygonType id="leisure.swimming_pool" color=".67,.83,.88" layer="-3" fill="true"/>
+    <polygonType id="waterway.river" color=".56,.76,.84" layer="-5" fill="false"/>
+    <polygonType id="waterway.canal" color=".56,.76,.84" layer="-5" fill="false"/>
+    <polygonType id="waterway.stream" color=".56,.76,.84" layer="-5" fill="false"/>
+    <polygonType id="waterway.drain" color=".60,.77,.84" layer="-5" fill="false"/>
+
+    <!-- Land use (base layer) -->
+    <polygonType id="landuse.residential" color=".91,.90,.87" layer="-9" fill="true"/>
+    <polygonType id="landuse.commercial" color=".94,.89,.88" layer="-9" fill="true"/>
+    <polygonType id="landuse.retail" color=".95,.87,.87" layer="-9" fill="true"/>
+    <polygonType id="landuse.industrial" color=".91,.88,.91" layer="-9" fill="true"/>
+    <polygonType id="landuse.construction" color=".86,.85,.78" layer="-9" fill="true"/>
+    <polygonType id="landuse.railway" color=".88,.86,.88" layer="-9" fill="true"/>
+    <polygonType id="landuse.religious" color=".85,.86,.80" layer="-8" fill="true"/>
+    <polygonType id="landuse.cemetery" color=".75,.85,.74" layer="-8" fill="true"/>
+    <polygonType id="landuse.school" color=".96,.93,.82" layer="-8" fill="true"/>
+    <polygonType id="landuse.college" color=".96,.93,.82" layer="-8" fill="true"/>
+    <polygonType id="landuse.grass" color=".80,.90,.74" layer="-7" fill="true"/>
+    <polygonType id="landuse.village_green" color=".80,.90,.74" layer="-7" fill="true"/>
+    <polygonType id="landuse.recreation_ground" color=".80,.90,.74" layer="-7" fill="true"/>
+    <polygonType id="landuse.forest" color=".68,.82,.63" layer="-7" fill="true"/>
+
+    <!-- Green space -->
+    <polygonType id="natural.wood" color=".68,.82,.63" layer="-7" fill="true"/>
+    <polygonType id="natural.scrub" color=".78,.86,.70" layer="-7" fill="true"/>
+    <polygonType id="natural.grassland" color=".80,.90,.74" layer="-7" fill="true"/>
+    <polygonType id="leisure.park" color=".78,.89,.72" layer="-7" fill="true"/>
+    <polygonType id="leisure.garden" color=".78,.89,.72" layer="-7" fill="true"/>
+    <polygonType id="leisure.playground" color=".80,.90,.74" layer="-6" fill="true"/>
+    <polygonType id="leisure.pitch" color=".67,.84,.70" layer="-6" fill="true"/>
+    <polygonType id="leisure.stadium" color=".75,.87,.76" layer="-6" fill="true"/>
+    <polygonType id="leisure.sports_centre" color=".75,.87,.76" layer="-6" fill="true"/>
+
+    <!-- Institutional grounds -->
+    <polygonType id="amenity.hospital" color=".97,.86,.84" layer="-8" fill="true"/>
+    <polygonType id="amenity.clinic" color=".97,.86,.84" layer="-8" fill="true"/>
+    <polygonType id="amenity.school" color=".96,.93,.82" layer="-8" fill="true"/>
+    <polygonType id="amenity.college" color=".96,.93,.82" layer="-8" fill="true"/>
+    <polygonType id="amenity.university" color=".96,.93,.82" layer="-8" fill="true"/>
+    <polygonType id="amenity.place_of_worship" color=".85,.86,.80" layer="-8" fill="true"/>
+    <polygonType id="amenity.parking" color=".88,.88,.88" layer="-6" fill="true"/>
+
+    <!-- Buildings (every building=* value) -->
+    <polygonType id="building" color=".82,.79,.76" layer="-2" fill="true"/>
+</polygonTypes>

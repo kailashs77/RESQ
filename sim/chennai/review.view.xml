@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<viewsettings>
+    <scheme name="ResQ review">
+        <background backgroundColor="235,239,233" showGrid="0"/>
+        <edges laneEdgeMode="1" scaleMode="0" laneShowBorders="1" showBikeMarkings="1"
+               showLinkDecals="1" showLinkRules="1" hideConnectors="0"
+               widthExaggeration="1.10" minSize="0.00">
+            <colorScheme name="uniform">
+                <entry color="22,27,32" name="road"/>
+                <entry color="154,162,160" name="sidewalk"/>
+                <entry color="118,153,111" name="green verge"/>
+                <entry color="91,137,153" name="waterway"/>
+            </colorScheme>
+        </edges>
+        <vehicles vehicleMode="0" vehicleQuality="2" vehicle_minSize="1.00"
+                  vehicle_exaggeration="1.00" vehicle_constantSize="1"
+                  vehicle_constantSizeSelected="1" showBlinker="1"
+                  vehicleName_show="0" vehicleName_size="55.00" vehicleName_color="30,40,50"
+                  vehicleName_constantSize="1" vehicleName_onlySelected="1">
+            <colorScheme name="given vehicle/type/route color">
+                <entry color="84,104,124"/>
+            </colorScheme>
+        </vehicles>
+        <junctions junctionMode="2" drawShape="1" drawCrossingsAndWalkingareas="1"
+                   junction_minSize="0.00" junction_exaggeration="1.00"
+                   drawLinkTLIndex_show="0">
+            <colorScheme name="by type">
+                <entry color="39,169,111" name="traffic_light"/>
+                <entry color="39,169,111" name="traffic_light_unregulated"/>
+                <entry color="128,128,128" name="priority"/>
+                <entry color="128,128,128" name="priority_stop"/>
+                <entry color="128,128,128" name="right_before_left"/>
+                <entry color="128,128,128" name="allway_stop"/>
+                <entry color="128,128,128" name="unregulated"/>
+                <entry color="128,128,128" name="dead_end"/>
+            </colorScheme>
+        </junctions>
+        <additionals addMode="0" add_minSize="1.00" add_exaggeration="1.00"
+                     add_constantSize="1" addName_show="0"/>
+        <pois poi_minSize="12.00" poi_exaggeration="1.00" poi_constantSize="1"
+              poiName_show="0" poiType_show="1" poiType_size="80.00"
+              poiType_color="25,40,52" poiType_constantSize="1" poiType_onlySelected="0"/>
+        <polys poly_minSize="0.00" poly_exaggeration="1.00" poly_constantSize="0"
+               polyName_show="0" polyType_show="0"/>
+    </scheme>
+    <viewport zoom="850.00" x="1080.00" y="1760.00" angle="0.00"
+              centerX="0.00" centerY="0.00" centerZ="0.00"/>
+    <delay value="200.00"/>
+</viewsettings>

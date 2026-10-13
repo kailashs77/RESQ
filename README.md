@@ -23,10 +23,11 @@ Open `docs/routing-evaluation/routing-review.html`, or use the evidence link on 
 Brain page. Read `docs/ROUTING_REVIEW_GUIDE.md` for demonstration steps and claim limits.
 
 ResQ is a research prototype for ambulance routing and traffic-signal preemption.
-The current review build is a deterministic demonstration, **not** a validated
-traffic simulation or a trained-model result. Its Chennai routes are shortest
-paths on a checked-in, directed OpenStreetMap road graph. The incident, detection
-cue, queue delay, driving speeds, and signal states are staged inputs.
+Its Chennai routes are shortest paths on a checked-in, directed OpenStreetMap road
+graph, priced by a trained Graph WaveNet speed forecaster when a corridor checkpoint
+is built. The incident cue and signal states remain staged inputs, and the corridor
+model is trained on SUMO simulation of the study area rather than measured Chennai
+traffic — its accuracy is a statement about the simulator.
 
 ## Run locally
 
@@ -77,21 +78,62 @@ npm run build
 The Results page also generates formula-based estimates and stores them in
 `runs/resq_green.sqlite3`. These values must not be cited as measured performance.
 
-## SUMO network preview (separate from the review demo)
+## Run the real SUMO scenario
 
-After installing SUMO, set `SUMO_HOME`, put `netconvert` and `sumo-gui` on `PATH`,
-then run:
+SUMO 1.27.1, TraCI, and `sumolib` are installed in this workspace's `.venv`.
+No global `SUMO_HOME` or `PATH` change is required. To rebuild the current OSM
+network and launch the ambulance run in SUMO-GUI:
 
 ```powershell
-$env:SUMO_HOME = 'C:\path\to\sumo'
-.\.venv\Scripts\python.exe sim\chennai\build_network.py
-sumo-gui -c sim\chennai\chennai.sumocfg
+cd C:\OblivionX\College\IDP
+.\scripts\sumo.ps1 -Build
 ```
 
-This generates a separate SUMO road network and random background trips. The
-current application does **not** connect the staged ambulance replay to SUMO,
-CARLA, real signals, or a trained prediction model. Thus, use the Replay page for
-the review demonstration; do not present it as a SUMO validation run.
+For a fast headless verification:
+
+```powershell
+.\scripts\sumo.ps1 -Headless
+```
+
+Or call the components directly:
+
+```powershell
+.\.venv\Scripts\python.exe sim\chennai\build_network.py
+.\.venv\Scripts\python.exe -m sim.chennai.run_sumo --gui --delay-ms 50
+```
+
+The generated scenario contains random background traffic and a TraCI-inserted
+`AMB-01` emergency vehicle routed from the demo origin to the hospital. A local
+smoke run reached the destination over 34 SUMO edges (2.44 km) in 197.6 simulated
+seconds. This proves the simulator and TraCI loop run on this laptop; it is not a
+validated performance result. The dashboard is not driven by a live SUMO vehicle
+stream; it consumes SUMO indirectly, through the corridor speed histories that train
+the forecaster described below.
+
+For a fresh environment, install the simulation dependencies with
+`pip install -e ".[sumo]"` or `uv sync --extra sumo`.
+
+## Traffic forecasting
+
+Three Graph WaveNet checkpoints back the forecasting stack. METR-LA and PEMS-BAY
+validate the model class against the required persistence and historical-average
+baselines on public sensor data. CHENNAI-SIM is the checkpoint the decision brain
+uses: it is trained on repeatable SUMO runs of the study area, and the demonstration
+replays its held-out split so the interface can show a live prediction next to the
+truth it is judged against.
+
+```powershell
+.\scripts\forecast.ps1            # benchmarks and the corridor checkpoint
+.\scripts\forecast.ps1 -Corridor  # just the Chennai corridor pipeline
+```
+
+Training uses `.venv-forecast` with the CUDA build of PyTorch; the API serves
+inference from `.venv` on the CPU. Without a checkpoint the API stays up, the
+Forecast page prints the two commands needed to build one, and routing falls back to
+its previous staged travel times. Details and endpoints are in
+[docs/TRAFFIC_FORECASTING_RUN.md](docs/TRAFFIC_FORECASTING_RUN.md); the model
+selection analysis is in
+[docs/TRAFFIC_FORECASTING_PLAN.md](docs/TRAFFIC_FORECASTING_PLAN.md).
 
 ## Architecture
 
@@ -104,13 +146,15 @@ replay/experiment store.
 ![ResQ system architecture](docs/system-architecture.png)
 
 The current review build implements the FastAPI backend, driver web app,
-deterministic demonstration simulator, routing, fusion primitives, and safety
-state-machine components. YOLO inference, live traffic feeds, and full SUMO or
-CARLA decision-loop integration remain planned integration work.
+deterministic demonstration simulator, trained traffic forecasting, routing, fusion
+primitives, and safety state-machine components. YOLO inference, live traffic feeds,
+and full SUMO or CARLA decision-loop integration remain planned integration work.
 
 ```text
-checked-in OSM road graph -> directed routing -> staged incident demo -> API -> React
-future SUMO/CARLA integration -> observations -> fusion -> route policy -> validation
+simulated corridor histories -> Graph WaveNet -> calibrated speed forecast
+forecast -> macro observation -> fusion with camera detection -> route policy -> API -> React
+SUMO/TraCI runner -> real background traffic + ambulance trip -> validation foundation
+future web/SUMO bridge -> observations -> fusion -> route policy -> dashboard
 ```
 
 The shared contract is in `schema/models.py`. The road extract was downloaded

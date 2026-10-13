@@ -1,4 +1,5 @@
 .venv/
+.venv-forecast/
 __pycache__/
 *.py[cod]
 .pytest_cache/
@@ -18,6 +19,7 @@ web/vite.config.d.ts
 
 data/raw/
 data/processed/
+artifacts/forecast/
 runs/
 sim/chennai/generated/
 *.parquet

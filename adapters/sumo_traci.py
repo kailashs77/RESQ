@@ -3,6 +3,9 @@
 from __future__ import annotations
 
 import importlib
+import os
+import shutil
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -18,7 +21,23 @@ class SumoTraCIAdapter:
 
     @property
     def available(self) -> bool:
-        return importlib.util.find_spec("traci") is not None
+        return importlib.util.find_spec("traci") is not None and self._binary().is_file()
+
+    def _binary(self) -> Path:
+        name = "sumo-gui" if self.gui else "sumo"
+        discovered = shutil.which(name)
+        if discovered:
+            return Path(discovered)
+        suffix = ".exe" if os.name == "nt" else ""
+        candidates = [Path(sys.prefix) / "Scripts" / f"{name}{suffix}"]
+        configured = os.getenv("SUMO_HOME")
+        if configured:
+            candidates.append(Path(configured) / "bin" / f"{name}{suffix}")
+        specification = importlib.util.find_spec("sumo")
+        if specification and specification.submodule_search_locations:
+            sumo_home = Path(next(iter(specification.submodule_search_locations)))
+            candidates.append(sumo_home / "bin" / f"{name}{suffix}")
+        return next((candidate for candidate in candidates if candidate.is_file()), candidates[0])
 
     def start(self) -> None:
         if not self.available:
@@ -27,7 +46,7 @@ class SumoTraCIAdapter:
             raise AdapterUnavailable(f"SUMO config not found: {self.config_path}")
         traci = importlib.import_module("traci")
         traci.start(
-            ["sumo-gui" if self.gui else "sumo", "-c", str(self.config_path), "--start"],
+            [str(self._binary()), "-c", str(self.config_path), "--start"],
             label=self.label,
         )
         self._traci = traci.getConnection(self.label)
