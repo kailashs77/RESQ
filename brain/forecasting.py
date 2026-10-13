@@ -58,7 +58,11 @@ class ForecastBrain:
         self.traffic = traffic
         self.historical = HistoricalAverageForecaster(bucket_minutes=bucket_minutes)
         self.historical.fit(
-            [record for edge_id in edge_lengths_m for record in traffic.week_history(edge_id, bucket_minutes)]
+            [
+                record
+                for edge_id in edge_lengths_m
+                for record in traffic.week_history(edge_id, bucket_minutes)
+            ]
         )
         self.spatial_temporal = SpatialTemporalForecaster(neighbours)
 
@@ -69,7 +73,11 @@ class ForecastBrain:
         # how tightly its own training samples happen to cluster.
         stddev_mps = max(forecast.stddev_mps, 0.3 * forecast.speed_mps)
         return _to_observation(
-            edge_id, SourceKind.HISTORICAL, forecast.speed_mps, stddev_mps, self.edge_lengths_m[edge_id]
+            edge_id,
+            SourceKind.HISTORICAL,
+            forecast.speed_mps,
+            stddev_mps,
+            self.edge_lengths_m[edge_id],
         )
 
     def _spatial_temporal_observation(

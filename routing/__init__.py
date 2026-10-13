@@ -1,4 +1,10 @@
-from .engine import PathResult, RoadEdge, RouteGraph, should_switch_route
+from .engine import NoPathError, PathResult, RoadEdge, RouteGraph, SearchStats, should_switch_route
 
-__all__ = ["PathResult", "RoadEdge", "RouteGraph", "should_switch_route"]
-
+__all__ = [
+    "NoPathError",
+    "PathResult",
+    "RoadEdge",
+    "RouteGraph",
+    "SearchStats",
+    "should_switch_route",
+]

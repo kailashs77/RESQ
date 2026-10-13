@@ -8,6 +8,26 @@ export type RouteOption = {
   selected: boolean;
   reason: string;
   geometry: GeoPoint[];
+  feasible: boolean;
+};
+
+export type RoutingDecision = {
+  status: string;
+  decision: string;
+  reason: string;
+  algorithm: string;
+  weight_source: string;
+  original_roads: string[];
+  selected_roads: string[];
+  blocked_edge_ids: string[];
+  current_eta_s: number | null;
+  candidate_eta_s: number | null;
+  saving_s: number | null;
+  minimum_saving_s: number;
+  minimum_saving_fraction: number;
+  connectivity_valid: boolean;
+  nodes_explored: number;
+  computation_ms: number;
 };
 
 export type SignalState = {
@@ -28,7 +48,7 @@ export type Snapshot = {
     position: GeoPoint;
     speed_mps: number;
     heading_deg: number;
-    route_id: string;
+    route_id: string | null;
     progress: number;
   };
   roads: {
@@ -49,6 +69,7 @@ export type Snapshot = {
     historical_model_enabled: boolean;
     spatial_temporal_model_enabled: boolean;
     congestion_scenario: boolean;
+    blocked_edge_ids: string[];
   };
   health: {
     macro_age_s: number;
@@ -56,6 +77,7 @@ export type Snapshot = {
     overall_confidence: number;
   };
   incident: GeoPoint | null;
+  routing_decision: RoutingDecision | null;
 };
 
 export type BaselineId = "B0" | "B1" | "B2" | "B3" | "B4" | "B5";

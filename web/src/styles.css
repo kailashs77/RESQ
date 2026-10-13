@@ -305,3 +305,14 @@ button:focus-visible, input:focus-visible, summary:focus-visible { outline: 2px 
   html { scroll-behavior: auto; }
   *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; }
 }
+.routing-explanation dl { display: grid; grid-template-columns: 110px 1fr; gap: 8px 12px; font-size: 12px; line-height: 1.5; }
+.routing-explanation dt { color: #63736b; }
+.routing-explanation dd { margin: 0; overflow-wrap: anywhere; }
+.routing-explanation h2 { font-size: 19px; }
+.routing-comparison { margin-top: 32px; padding: 24px; background: #fff; border: 1px solid #dde4da; border-radius: 12px; }
+.routing-comparison h2 { margin: 8px 0; }
+.comparison-scroll { overflow: auto; }
+.routing-comparison table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.routing-comparison th, .routing-comparison td { text-align: left; padding: 10px; border-bottom: 1px solid #e1e6df; white-space: nowrap; }
+.routing-comparison th { background: #edf2ea; }
+.routing-comparison a { color: #177347; }

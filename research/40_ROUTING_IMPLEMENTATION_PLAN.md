@@ -1,5 +1,10 @@
 # 40 — Implementation Plan (Research Only — No Code Changed)
 
+> Historical rollout plan. Priority 1 implements shared A*/Dijkstra search,
+> forecast-snapshot weighting in Brain, explicit closures, graceful no-path
+> handling and experimental evidence. D* Lite (Stage 4) remains future work.
+> See `docs/ROUTING_REVIEW_GUIDE.md` for the current implementation and limits.
+
 This describes *how* the recommendation in `30_ROUTING_ALGORITHM_RECOMMENDATION.md`
 and `31_FINAL_ROUTING_ARCHITECTURE.md` could eventually be built into RESQ. No code
 in this repository has been modified to produce this document.

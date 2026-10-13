@@ -7,7 +7,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 class StrictModel(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
 
 
 class SourceKind(StrEnum):
@@ -108,12 +108,32 @@ class RouteOption(StrictModel):
     selected: bool = False
     reason: str
     geometry: list[GeoPoint]
+    feasible: bool = True
 
 
 class DecisionEvent(StrictModel):
     at_s: float = Field(ge=0)
     kind: str
     message: str
+
+
+class RoutingDecision(StrictModel):
+    status: str
+    decision: str
+    reason: str
+    algorithm: str = "A* shortest path"
+    weight_source: str
+    original_roads: list[str] = Field(default_factory=list)
+    selected_roads: list[str] = Field(default_factory=list)
+    blocked_edge_ids: list[str] = Field(default_factory=list)
+    current_eta_s: float | None = Field(default=None, ge=0)
+    candidate_eta_s: float | None = Field(default=None, ge=0)
+    saving_s: float | None = None
+    minimum_saving_s: float = 10.0
+    minimum_saving_fraction: float = 0.05
+    connectivity_valid: bool = False
+    nodes_explored: int = Field(default=0, ge=0)
+    computation_ms: float = Field(default=0.0, ge=0)
 
 
 class ControlState(StrictModel):
@@ -124,6 +144,7 @@ class ControlState(StrictModel):
     historical_model_enabled: bool = True
     spatial_temporal_model_enabled: bool = True
     congestion_scenario: bool = False
+    blocked_edge_ids: list[str] = Field(default_factory=list)
 
 
 class DataHealth(StrictModel):
@@ -145,6 +166,7 @@ class NetworkSnapshot(StrictModel):
     controls: ControlState
     health: DataHealth
     incident: GeoPoint | None = None
+    routing_decision: RoutingDecision | None = None
 
 
 class ExperimentConfig(StrictModel):

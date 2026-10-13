@@ -53,7 +53,9 @@ class SyntheticTrafficSource:
     """Ground-truth speed model used to seed both forecasters and to sample
     "recent" observations, in lieu of a live probe/macro feed."""
 
-    def __init__(self, base_speeds_mps: dict[str, float], congested_edges: set[str] = frozenset()) -> None:
+    def __init__(
+        self, base_speeds_mps: dict[str, float], congested_edges: set[str] = frozenset()
+    ) -> None:
         self._profiles: dict[str, EdgeProfile] = {}
         for edge_id, base_speed in base_speeds_mps.items():
             seed = _edge_seed(edge_id)

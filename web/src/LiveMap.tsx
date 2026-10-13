@@ -20,7 +20,7 @@ export default function LiveMap({ snapshot, followVehicle = false }: { snapshot:
     if (!data || !instance.getSource("routes")) return;
     const features: GeoJSON.Feature[] = data.routes.map((route) => ({
       type: "Feature",
-      properties: { selected: route.selected, id: route.route_id },
+      properties: { selected: route.selected, feasible: route.feasible, id: route.route_id },
       geometry: { type: "LineString", coordinates: route.geometry.map((point) => [point.lon, point.lat]) },
     }));
     (instance.getSource("routes") as GeoJSONSource).setData({ type: "FeatureCollection", features });
@@ -80,7 +80,7 @@ export default function LiveMap({ snapshot, followVehicle = false }: { snapshot:
         "line-color": "#ffffff", "line-width": ["case", ["get", "selected"], 10, 7], "line-opacity": 0.95,
       } });
       instance.addLayer({ id: "route-lines", type: "line", source: "routes", paint: {
-        "line-color": ["case", ["get", "selected"], "#2a9b37", "#515f56"],
+        "line-color": ["case", ["==", ["get", "feasible"], false], "#bf443b", ["get", "selected"], "#2a9b37", "#515f56"],
         "line-width": ["case", ["get", "selected"], 6, 4], "line-opacity": 0.95,
       } });
       sync(instance, latest.current);

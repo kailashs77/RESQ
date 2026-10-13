@@ -1,6 +1,7 @@
 """FastAPI entrypoint for the first ResQ vertical slice."""
 
 import asyncio
+import json
 import os
 from pathlib import Path
 from typing import Annotated
@@ -42,6 +43,7 @@ app.add_middleware(
 
 simulation = DemoSimulation()
 brain_simulation = BrainSimulation()
+ROUTING_EVIDENCE = Path(__file__).resolve().parents[1] / "docs" / "routing-evaluation"
 runner = FastScenarioRunner()
 store = RunStore()
 
@@ -84,6 +86,39 @@ def snapshot() -> NetworkSnapshot:
 def roads() -> dict:
     """Inspect the same OSM road ways used by the demonstration router."""
     return road_geojson()
+
+
+@app.get("/api/routing/evaluation")
+def routing_evaluation() -> dict:
+    """Measured, saved evidence. Do not run a benchmark in a live request."""
+    path = ROUTING_EVIDENCE / "routing-evaluation.json"
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="Generate routing evaluation evidence first")
+    report = json.loads(path.read_text(encoding="utf-8"))
+    return {
+        key: report[key]
+        for key in (
+            "generated_at",
+            "metadata",
+            "comparison",
+            "hysteresis",
+            "route_changes",
+            "dynamic_checks",
+        )
+    }
+
+
+@app.get("/api/routing/evidence/{filename}")
+def routing_evidence(filename: str) -> FileResponse:
+    allowed = {
+        "routing-review.html",
+        "routing-evaluation.json",
+        "algorithm-comparison.csv",
+        "accident-route-overlay.svg",
+    }
+    if filename not in allowed or not (ROUTING_EVIDENCE / filename).is_file():
+        raise HTTPException(status_code=404, detail="Evidence file not found")
+    return FileResponse(ROUTING_EVIDENCE / filename)
 
 
 @app.patch("/api/controls", response_model=ControlState)
@@ -157,7 +192,9 @@ def brain_snapshot() -> NetworkSnapshot:
 
 @app.patch("/api/brain/controls", response_model=ControlState)
 def update_brain_controls(
-    changes: Annotated[dict[str, bool | int], Body(examples=[{"congestion_scenario": True}])],
+    changes: Annotated[
+        dict[str, bool | int | list[str]], Body(examples=[{"congestion_scenario": True}])
+    ],
 ) -> ControlState:
     try:
         return brain_simulation.update_controls(**changes)

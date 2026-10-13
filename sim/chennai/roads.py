@@ -6,13 +6,15 @@ mapped one-way streets and motor-vehicle exclusions at extract time.
 
 from __future__ import annotations
 
-import heapq
 import json
+from collections.abc import Mapping
 from dataclasses import dataclass
 from functools import lru_cache
-from math import asin, cos, radians, sin, sqrt
+from math import asin, cos, isfinite, radians, sin, sqrt
 from pathlib import Path
 
+from routing import NoPathError, RouteGraph, SearchStats
+from routing import RoadEdge as SearchEdge
 from schema import GeoPoint
 
 DATA = Path(__file__).with_name("roads.json")
@@ -97,46 +99,113 @@ class RoadNetwork:
                         RoadEdge(a, f"{base_id}:-", way["name"], length, length / speed_mps)
                     )
 
+        self.edge_index = {
+            edge.edge_id: (source, edge)
+            for source, edges in self.adjacency.items()
+            for edge in edges
+        }
+        self.graph = RouteGraph(
+            (
+                SearchEdge(edge.edge_id, source, edge.target, edge.travel_s)
+                for source, edges in self.adjacency.items()
+                for edge in edges
+            ),
+            nodes=self.nodes,
+        )
+
     def nearest_node(self, point: GeoPoint) -> str:
         return min(self.nodes, key=lambda node_id: distance_m(point, self.nodes[node_id]))
 
     def route(
-        self, start: str, finish: str, blocked: frozenset[str] = frozenset()
+        self,
+        start: str,
+        finish: str,
+        blocked: frozenset[str] = frozenset(),
+        *,
+        algorithm: str = "dijkstra",
+        weights: Mapping[str, float] | None = None,
+        departure_time_s: float = 0.0,
+        stats: SearchStats | None = None,
     ) -> RoadPath | None:
-        queue: list[tuple[float, str]] = [(0.0, start)]
-        best = {start: 0.0}
-        previous: dict[str, tuple[str, RoadEdge]] = {}
-        while queue:
-            cost, current = heapq.heappop(queue)
-            if cost > best[current]:
-                continue
-            if current == finish:
-                break
-            for edge in self.adjacency[current]:
-                if edge.edge_id in blocked:
-                    continue
-                candidate = cost + edge.travel_s
-                if candidate < best.get(edge.target, float("inf")):
-                    best[edge.target] = candidate
-                    previous[edge.target] = (current, edge)
-                    heapq.heappush(queue, (candidate, edge.target))
-        if finish not in best:
+        """Search the full directed graph with one immutable weight snapshot.
+
+        A* uses great-circle distance times a proven lower cost/metre bound,
+        recalculated for predictions (including predictions faster than static).
+        Unknown/invalid inputs raise ValueError; only disconnection returns None.
+        """
+        weights = weights or {}
+        if set(weights) - self.edge_index.keys() or set(blocked) - self.edge_index.keys():
+            raise ValueError("unknown edge in weights or closure set")
+        if any(not isfinite(cost) or cost <= 0 for cost in weights.values()):
+            raise ValueError("weights must be finite and positive")
+        lower_bound = (
+            min(
+                (
+                    weights.get(edge_id, edge.travel_s) / edge.length_m
+                    for edge_id, (_, edge) in self.edge_index.items()
+                    if edge_id not in blocked
+                ),
+                default=0.0,
+            )
+            if algorithm == "astar"
+            else 0.0
+        )
+        try:
+            result = self.graph.shortest_path(
+                start,
+                finish,
+                departure_time_s,
+                edge_cost=lambda edge, _: weights.get(edge.edge_id, edge.base_travel_time_s),
+                algorithm=algorithm,
+                heuristic=lambda a, b: distance_m(self.nodes[a], self.nodes[b]) * lower_bound,
+                blocked=blocked,
+                stats=stats,
+            )
+        except NoPathError:
             return None
-        nodes = [finish]
-        edges: list[RoadEdge] = []
-        while nodes[-1] != start:
-            parent, edge = previous[nodes[-1]]
-            nodes.append(parent)
+        return self.path_from_edges(start, result.edge_ids, weights)
+
+    def path_from_edges(
+        self,
+        start: str,
+        edge_ids: tuple[str, ...],
+        weights: Mapping[str, float] | None = None,
+    ) -> RoadPath:
+        """Reconstruct only a connected sequence of actual directed road edges."""
+        weights = weights or {}
+        nodes = [start]
+        edges = []
+        for edge_id in edge_ids:
+            source, edge = self.edge_index[edge_id]
+            if source != nodes[-1]:
+                raise ValueError(f"disconnected road sequence at {edge_id}")
+            nodes.append(edge.target)
             edges.append(edge)
-        nodes.reverse()
-        edges.reverse()
         return RoadPath(
             nodes=tuple(nodes),
             edges=tuple(edge.edge_id for edge in edges),
             names=tuple(edge.name for edge in edges),
             distance_m=sum(edge.length_m for edge in edges),
-            travel_s=sum(edge.travel_s for edge in edges),
+            travel_s=sum(weights.get(edge.edge_id, edge.travel_s) for edge in edges),
             geometry=tuple(self.nodes[node] for node in nodes),
+        )
+
+    def validate_path(self, path: RoadPath, blocked: frozenset[str] = frozenset()) -> bool:
+        """Prove every adjacent pair is a mapped directed edge and is open."""
+        if len(path.nodes) != len(path.edges) + 1 or len(path.geometry) != len(path.nodes):
+            return False
+        if set(path.edges) & blocked:
+            return False
+        return all(
+            self.nodes.get(node) == point
+            for node, point in zip(path.nodes, path.geometry, strict=True)
+        ) and all(
+            edge_id in self.edge_index
+            and self.edge_index[edge_id][0] == source
+            and self.edge_index[edge_id][1].target == target
+            for source, target, edge_id in zip(
+                path.nodes[:-1], path.nodes[1:], path.edges, strict=True
+            )
         )
 
 
@@ -189,7 +258,12 @@ def demo_plan() -> IncidentPlan:
                 break
         if section_length < 65:
             continue
-        blocked = frozenset(edge_id[:-1] + sign for edge_id in section for sign in ("+", "-"))
+        blocked = frozenset(
+            edge_id[:-1] + sign
+            for edge_id in section
+            for sign in ("+", "-")
+            if edge_id[:-1] + sign in network.edge_index
+        )
         bypass = network.route(start, finish, blocked)
         if bypass is None or bypass.travel_s <= normal.travel_s + 5:
             continue

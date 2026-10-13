@@ -1,5 +1,11 @@
 # A* (A-Star) Search
 
+**Current status: Implemented and measured.** `routing/engine.py` provides A*,
+`sim/chennai/roads.py` supplies an admissible geometric heuristic derived from
+the actual weights, and Brain calls it for full-graph replanning. The evaluation
+report records both time and explored nodes. Fewer nodes does not guarantee lower
+wall-clock time on every input. Dijkstra verifies equal optimal cost.
+
 ## 1. One-sentence definition
 
 A* is Dijkstra's algorithm with a built-in sense of direction: it prefers to

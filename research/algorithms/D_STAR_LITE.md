@@ -5,6 +5,10 @@ handles blockages by *rerunning Dijkstra from scratch* (`sim/chennai/roads.py::d
 via `RoadNetwork.route(..., blocked=...)`). D* Lite is the algorithm family that
 avoids that full rerun.
 
+Priority 1 adds fresh **A*** searches in the Brain mission. This is still a full
+search, with no incremental D* Lite state. D* Lite remains future work and has
+no measured comparison row.
+
 ## 1. One-sentence definition
 
 D* Lite finds a shortest path the same way A* does, but when the graph later

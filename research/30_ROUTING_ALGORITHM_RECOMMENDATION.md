@@ -1,5 +1,10 @@
 # 30 — Recommendation
 
+> Current review status: Dijkstra and A* are implemented and measured. Replanning
+> uses fresh A* searches. D* Lite remains future work until an implementation can
+> be demonstrated and benchmarked. The discussion below is the original design
+> recommendation, not evidence that all proposed components exist.
+
 This is written only after completing `01`–`21`. It answers the brief's 15 explicit
 questions directly.
 

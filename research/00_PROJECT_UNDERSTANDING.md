@@ -1,5 +1,10 @@
 # 00 — What RESQ Actually Is Today
 
+> Historical inventory of the initial fork. Priority 1 now implements full-graph
+> A* in Brain, closures, hysteresis and measured routing evaluation. Read
+> `docs/ROUTING_REVIEW_GUIDE.md` and `docs/routing-evaluation/routing-review.html`
+> for the current implementation. The inventory below describes the earlier baseline.
+
 This file is a factual inventory of the repository as it exists right now, built by
 reading the source code directly (not the marketing language in the README). Every
 claim below is tagged **IMPLEMENTED**, **PLANNED**, **ASSUMED/STAGED**, or **FUTURE**,
